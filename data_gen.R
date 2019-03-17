@@ -27,7 +27,7 @@ dat_a <- dat_a %>%
                    page_num == 2 ~ 'payment',
                    page_num == 3 ~ 'confirmation'),
            webflow_id = 'A',
-           test_flag = ifelse(session_id_a <= (100000 + a)/2, 'pre_test', 'test'),
+           test_flag = ifelse(session_id_a <= 100000 + (a/2), 'pre_test', 'test'),
            completed_order_flag = ifelse(page_num == 3, 1, 0)) %>%
     select(test_flag, webflow_id, session_id = session_id_a, page_num, page_name, time_spent, completed_order_flag)
 
