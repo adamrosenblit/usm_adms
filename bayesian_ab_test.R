@@ -20,8 +20,8 @@
 library(tidyverse)
 library(bayesAB)
 
-data <- read.csv('ab_data.csv')
-# View(data)
+data <- read.csv('ab_data_2.csv')
+View(data)
 
 # pre-test flow A
 pretest_webflow_A <- data %>% filter(test_flag=='pre_test' & webflow_id=='A')
@@ -59,8 +59,8 @@ get_stats <- function(x) {
     sample_size <- length(x)
     conversion_rate <- round(conversions/sample_size, 4)
     variance <- conversion_rate*(1-conversion_rate)/sample_size
-    lower_95 <- round(conversion_rate_pretest_webflow_A - 1.96*sqrt(variance), 4)
-    upper_95 <- round(conversion_rate_pretest_webflow_A + 1.96*sqrt(variance), 4)
+    lower_95 <- round(conversion_rate - 1.96*sqrt(variance), 4)
+    upper_95 <- round(conversion_rate + 1.96*sqrt(variance), 4)
     my_stats <- list(conversions = conversions,
                      sample_size = sample_size,
                      conversion_rate = conversion_rate, 
@@ -123,10 +123,10 @@ prop.test(x = c(test_A_stats$conversions, test_B_stats$conversions),
 #
 # We'll add the point estimate p_hat as well as the bounds of 95% CI for reference.
 
-a <- pretest_A_stats$conversions
-b <- pretest_A_stats$sample_size - pretest_A_stats$conversions
+alpha <- pretest_A_stats$conversions
+beta <- pretest_A_stats$sample_size - pretest_A_stats$conversions
 
-plot_beta <- plotBeta(alpha=a, beta=b)
+plot_beta <- plotBeta(alpha=alpha, beta=beta)
 plot_beta + 
     geom_vline(xintercept=pretest_A_stats$lower_95, linetype='dashed', color = 'darkblue') +
     geom_vline(xintercept=pretest_A_stats$upper_95, linetype='dashed', color = 'darkblue') +
@@ -136,7 +136,7 @@ plot_beta +
 # This is our AB Test object    
 abTest_1 <- bayesTest(session_level_test_webflow_A$is_order, 
                       session_level_test_webflow_B$is_order, 
-                      priors = c('alpha' = params$alpha, 'beta' = params$beta), 
+                      priors = c('alpha' = alpha, 'beta' = beta), 
                       n_samples = 1e5, 
                       distribution = 'bernoulli')
 # basic info about our test
