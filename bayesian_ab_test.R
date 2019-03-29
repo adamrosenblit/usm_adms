@@ -20,8 +20,9 @@
 library(tidyverse)
 library(bayesAB)
 
+# data <- read.csv('ab_data.csv')
 data <- read.csv('ab_data_2.csv')
-View(data)
+# View(data)
 
 # pre-test flow A
 pretest_webflow_A <- data %>% filter(test_flag=='pre_test' & webflow_id=='A')
