@@ -1,0 +1,46 @@
+---
+title: "Bayesian A/B Testing in R \n"
+author: Adam Rosenblit & David Denton
+date: April 26, 2019
+output:
+  revealjs::revealjs_presentation:
+    transition: slide
+    theme: blood
+    highlight: zenburn
+    center: true
+---
+
+## A slide with an ordered list
+
+We're going to talk about this stuff:
+
+1. Data
+2. Bayes
+3. The airspeed velocity of unladen swallows
+
+
+## A slide with an unordered list
+
+- First important thing
+- Second important thing
+
+## A slide with code (and a table)
+
+```{r message=FALSE}
+library(tidyverse)
+
+mtcars1 <- mtcars %>%
+  group_by(cyl, gear) %>%
+  tally()
+```
+
+```{r echo = FALSE}
+knitr::kable(mtcars1, caption = 'A count of cars', format = 'html') %>%
+    kableExtra::kable_styling(bootstrap_options = c('striped'))
+```
+
+## A slide with a plot
+
+```{r, cars, fig.cap = "A scatterplot", echo = FALSE}
+plot(cars)
+```
