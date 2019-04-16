@@ -9,6 +9,18 @@ output:
     highlight: zenburn
     center: true
 ---
+```{r, echo=FALSE}
+htmltools::img(src = knitr::image_uri("logo4.png"), 
+               alt = 'logo', 
+               style = 'background:none; border:none; box-shadow:none; position:relative;')
+```
+
+### Company Overview
+* Established in 2012
+* Leading online widget supplier
+* Excellent sales growth during first four years
+* Sales began to decrease in 2016
+    + Complicated web order form
 
 ## A slide with an ordered list
 
