@@ -21,6 +21,30 @@ htmltools::img(src = knitr::image_uri("logo4.png"),
 * Excellent sales growth during first four years
 * Sales began to decrease in 2016
     + Complicated web order form
+    + Increasing number of orders from mobile devices
+    
+## Existing Sales Funnel
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+library(ggthemes)
+gg <- read_csv('ab_data_2.csv') %>%
+    filter(test_flag == 'pre_test') %>%
+    group_by(page_num) %>%
+    summarise(total_sessions = n_distinct(session_id)) %>%
+    ungroup() %>%
+    mutate(pct_total_sessions = total_sessions/first(total_sessions)) %>%
+    ggplot(aes(x = page_num, y = pct_total_sessions, fill = as_factor(pct_total_sessions))) +
+    geom_bar(stat = 'identity') +
+    geom_text(nudge_y = .05, aes(label = paste0(round(pct_total_sessions*100, 2), '%')), size = 5) +
+    theme_economist() + scale_fill_economist() +
+    theme(legend.position = 'none') + theme(text= element_text(size = 14)) + 
+    theme(axis.title = element_text(face = 'bold')) +
+    xlab('Page Number') + ylab('Percent of Sessions') 
+    
+    
+gg
+```
+
 
 ## A slide with an ordered list
 
@@ -36,6 +60,7 @@ We're going to talk about this stuff:
 - First important thing
 - Second important thing
 
+
 ## A slide with code (and a table)
 
 ```{r message=FALSE}
@@ -50,6 +75,7 @@ mtcars1 <- mtcars %>%
 knitr::kable(mtcars1, caption = 'A count of cars', format = 'html') %>%
     kableExtra::kable_styling(bootstrap_options = c('striped'))
 ```
+
 
 ## A slide with a plot
 
