@@ -29,21 +29,36 @@ library(tidyverse)
 library(ggthemes)
 gg <- read_csv('ab_data_2.csv') %>%
     filter(test_flag == 'pre_test') %>%
-    group_by(page_num) %>%
+    group_by(page_name, page_num) %>%
     summarise(total_sessions = n_distinct(session_id)) %>%
     ungroup() %>%
-    mutate(pct_total_sessions = total_sessions/first(total_sessions)) %>%
-    ggplot(aes(x = page_num, y = pct_total_sessions, fill = as_factor(pct_total_sessions))) +
+    mutate(pct_total_sessions = total_sessions/max(total_sessions)) %>%
+    ggplot(aes(x = reorder(page_name, page_num), y = pct_total_sessions, fill = as_factor(pct_total_sessions))) +
     geom_bar(stat = 'identity') +
     geom_text(nudge_y = .05, aes(label = paste0(round(pct_total_sessions*100, 2), '%')), size = 5) +
     theme_economist() + scale_fill_economist() +
     theme(legend.position = 'none') + theme(text= element_text(size = 14)) + 
     theme(axis.title = element_text(face = 'bold')) +
-    xlab('Page Number') + ylab('Percent of Sessions') 
+    xlab('Page Name') + ylab('Percent of Sessions') 
     
     
 gg
 ```
+
+---
+```{r, echo=FALSE}
+htmltools::img(src = knitr::image_uri("logo4.png"), 
+               alt = 'logo', 
+               style = 'background:none; border:none; box-shadow:none; position:relative;')
+```
+
+* The Problem
+    + Conversion rate is low
+    + Too many potential customers are lost
+* The Solution
+    + Develop a new buy-flow
+    + Split site traffic between old & new buy-flows
+    + Perform A/B test
 
 
 ## A slide with an ordered list
