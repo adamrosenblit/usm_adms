@@ -33,7 +33,7 @@ gg <- read_csv('ab_data_2.csv') %>%
     summarise(total_sessions = n_distinct(session_id)) %>%
     ungroup() %>%
     mutate(pct_total_sessions = total_sessions/max(total_sessions)) %>%
-    ggplot(aes(x = reorder(page_name, page_num), y = pct_total_sessions, fill = as_factor(pct_total_sessions))) +
+    ggplot(aes(x = reorder(page_name, page_num), y = pct_total_sessions, fill = as.factor(pct_total_sessions))) +
     geom_bar(stat = 'identity') +
     geom_text(nudge_y = .05, aes(label = paste0(round(pct_total_sessions*100, 2), '%')), size = 5) +
     theme_economist() + scale_fill_economist() +
@@ -60,40 +60,122 @@ htmltools::img(src = knitr::image_uri("logo4.png"),
     + Split site traffic between old & new buy-flows
     + Perform A/B test
 
-
-## A slide with an ordered list
-
-We're going to talk about this stuff:
-
-1. Data
-2. Bayes
-3. The airspeed velocity of unladen swallows
-
-
-## A slide with an unordered list
-
-- First important thing
-- Second important thing
-
-
-## A slide with code (and a table)
-
-```{r message=FALSE}
-library(tidyverse)
-
-mtcars1 <- mtcars %>%
-  group_by(cyl, gear) %>%
-  tally()
+***
+```{r, echo=FALSE}
+htmltools::img(src = knitr::image_uri("logo4.png"), 
+               alt = 'logo', 
+               style = 'background:none; border:none; box-shadow:none; position:relative;')
 ```
 
-```{r echo = FALSE}
-knitr::kable(mtcars1, caption = 'A count of cars', format = 'html') %>%
-    kableExtra::kable_styling(bootstrap_options = c('striped'))
-```
+###Frequentist Approach
+* Calcuate sample size using Power Test
+* Calculate a point estimate of the conversion rate (sample proportion) for A and B
+* Conduct test under the null hypothesis that the conversion rates are equal
+* Hope that the resulting p-value < 0.05 so we can reject the null and therefore accept the alternative
+
+***
+```{r, echo=FALSE}
+htmltools::img(src = knitr::image_uri("logo4.png"), 
+               alt = 'logo', 
+               style = 'background:none; border:none; box-shadow:none; position:relative;')
+```  
+
+###Bayesian Approach
+* Encapsulate prior knowledge of conversion rate (ie, Find the conjugate prior distribution of the true parameter)
+* Combine test data with prior knowledge to get the posterior distribution over the parameter
+* Obtain direct probabilities of whether B is better than A (and by how much), and of the expected loss of choosing B over A
+
+***
+```{r, echo=FALSE}
+htmltools::img(src = knitr::image_uri("logo4.png"), 
+               alt = 'logo', 
+               style = 'background:none; border:none; box-shadow:none; position:relative;')
+```  
+
+###Bayesian vs Frequentist Approach
+* Instead of p-values you get direct probabilities on whether B is better than A (and by how much)
+* Instead of point estimates your posterior distributions are parametrized random variables
+* Bayesian tests are also immune to ‘peeking’ and are thus valid whenever a test is stopped
+
+    
+***
+```{r, echo=FALSE}
+htmltools::img(src = knitr::image_uri("logo4.png"), 
+               alt = 'logo', 
+               style = 'background:none; border:none; box-shadow:none; position:relative;')
+```  
+
+###So, how does the Bayes A/B test work?
+* Find a conjugate prior for the parameter in question
+    + The set of visit's are Binomial(n,p), since each visit's probability of conversion is an _iid_ Bernoulli(p) trial
+    + Then, $p_c$$_p$ ~ Beta($\alpha$$_{cp}$, $\beta$$_{cp}$) as its conjugate prior
+    + Set $\alpha$$_{cp}$ equal to the conversions and $\beta$$_{cp}$ as the drop-offs using prior knowldge of conversion odds
 
 
-## A slide with a plot
+***
+```{r, echo=FALSE}
+htmltools::img(src = knitr::image_uri("logo4.png"), 
+               alt = 'logo', 
+               style = 'background:none; border:none; box-shadow:none; position:relative;')
+```  
 
-```{r, cars, fig.cap = "A scatterplot", echo = FALSE}
-plot(cars)
-```
+###So, how does the Bayes A/B test work? (continued)   
+* Use data collected for A and B to define the posterior distributions over their parameters 
+    + $p_A$ ~ Beta($\alpha$$_A$ + $\alpha$$_{cp}$, $\beta$$_A$ + $\beta$$_{cp}$)
+    + $p_B$ ~ Beta($\alpha$$_B$ + $\alpha$$_{cp}$, $\beta$$_B$ + $\beta$$_{cp}$)
+
+***
+```{r, echo=FALSE}
+htmltools::img(src = knitr::image_uri("logo4.png"), 
+               alt = 'logo', 
+               style = 'background:none; border:none; box-shadow:none; position:relative;')
+```  
+
+###So, how does the Bayes A/B test work? (continued)   
+* Conduct a MonteCarlo simulation using those posterior distributions
+    + Draw n samples from $p_A$ and from $p_B$
+    + Calculate P(B>A)
+    + Calculate credible interval on (B-A)/A
+    + Calculate posterior expected loss of choosing B over A
+
+***
+```{r, echo=FALSE}
+htmltools::img(src = knitr::image_uri("logo4.png"), 
+               alt = 'logo', 
+               style = 'background:none; border:none; box-shadow:none; position:relative;')
+```  
+
+###Let's run some code!
+
+***
+```{r, echo=FALSE}
+htmltools::img(src = knitr::image_uri("logo4.png"), 
+               alt = 'logo', 
+               style = 'background:none; border:none; box-shadow:none; position:relative;')
+```  
+
+###bayesAB can do so much more!
+* We could also compare user interactions on two versions of a page 
+    + interactions ~ Poisson($\lambda$)
+    + then, $\lambda$ ~ Gamma($\alpha, \beta$)
+* Then we could test the effect of increased/decreased interactions on conversion using the ``combine``` function
+
+
+***
+```{r, echo=FALSE}
+htmltools::img(src = knitr::image_uri("logo4.png"), 
+               alt = 'logo', 
+               style = 'background:none; border:none; box-shadow:none; position:relative;')
+```  
+
+###Fruther Readings 
+* https://cran.r-project.org/web/packages/bayesAB/vignettes/introduction.html
+* https://www.countbayesie.com/blog/2015/4/25/bayesian-ab-testing
+* https://github.com/FrankPortman/bayesAB/
+
+
+
+
+
+
+
