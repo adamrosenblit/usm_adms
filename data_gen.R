@@ -1,6 +1,8 @@
 library(tidyverse)
 library(truncnorm)
 
+set.seed(444)
+
 # number of sessions for webflow A
 a <- 10000
 
@@ -9,7 +11,7 @@ b <- 5000
 
 #create data for webflow A
 session_id_a <- 100000:(100000 + a)
-last_step_a <- ceiling(rtruncnorm(a, a = 0, b = 3, mean = 0, sd = 1.5))
+last_step_a <- ceiling(rtruncnorm(a, a = 0, b = 3, mean = 0, sd = 1.4))
 
 dat_a <- as_tibble(cbind(session_id_a, last_step_a))
 
@@ -31,14 +33,12 @@ dat_a <- dat_a %>%
            completed_order_flag = ifelse(page_num == 3, 1, 0)) %>%
     select(test_flag, webflow_id, session_id = session_id_a, page_num, page_name, time_spent, completed_order_flag)
 
-# conv_a <- dat_a %>% summarise(sum(completed_order_flag/n())) %>% pull() 
 conv_a <- dat_a %>% summarise(sum(completed_order_flag)/n_distinct(session_id)) %>% pull()       
 conv_a
 
 # create data for webflow B
 session_id_b <- 200000:(200000 + b)
-# last_step_b <- ceiling(rtruncnorm(b, a = 0, b = 5, mean = 7.5, sd = 2))
-last_step_b <- ceiling(rtruncnorm(b, a = 0, b = 5, mean = 0, sd = 4.5))
+last_step_b <- ceiling(rtruncnorm(b, a = 0, b = 5, mean = .5, sd = 5))
 
 dat_b <- as_tibble(cbind(session_id_b, last_step_b))
 
@@ -69,5 +69,4 @@ conv_b
 
 dat <- bind_rows(dat_a, dat_b)
 
-# write_csv(dat, 'ab_data.csv')
-write_csv(dat, 'ab_data_2.csv')
+write_csv(dat, 'ab_data.csv')

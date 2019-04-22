@@ -40,7 +40,7 @@ library(bayesAB)
 # n
 
 # data <- read.csv('ab_data.csv')
-data <- read.csv('ab_data_2.csv')
+data <- read.csv('ab_data.csv')
 # View(data)
 
 # pre-test flow A
