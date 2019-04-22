@@ -69,4 +69,11 @@ conv_b
 
 dat <- bind_rows(dat_a, dat_b)
 
+dat_session_grain <- dat %>%
+    group_by(test_flag, webflow_id, session_id) %>%
+    summarise(is_conversion = max(completed_order_flag))
+
 write_csv(dat, 'ab_data.csv')
+write_csv(dat_session_grain, 'ab_data"session_grain.csv')
+
+
