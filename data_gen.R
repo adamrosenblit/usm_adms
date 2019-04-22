@@ -10,7 +10,7 @@ a <- 10000
 b <- 5000
 
 #create data for webflow A
-session_id_a <- 100000:(100000 + a)
+session_id_a <- 100001:(100000 + a)
 last_step_a <- ceiling(rtruncnorm(a, a = 0, b = 3, mean = 0, sd = 1.4))
 
 dat_a <- as_tibble(cbind(session_id_a, last_step_a))
@@ -33,11 +33,11 @@ dat_a <- dat_a %>%
            completed_order_flag = ifelse(page_num == 3, 1, 0)) %>%
     select(test_flag, webflow_id, session_id = session_id_a, page_num, page_name, time_spent, completed_order_flag)
 
+# calculate conversion rate for webflow A (pre-test & test)
 conv_a <- dat_a %>% summarise(sum(completed_order_flag)/n_distinct(session_id)) %>% pull()       
-conv_a
 
 # create data for webflow B
-session_id_b <- 200000:(200000 + b)
+session_id_b <- 200001:(200000 + b)
 last_step_b <- ceiling(rtruncnorm(b, a = 0, b = 5, mean = .5, sd = 5))
 
 dat_b <- as_tibble(cbind(session_id_b, last_step_b))
@@ -64,8 +64,8 @@ dat_b <- dat_b %>%
            completed_order_flag = ifelse(page_num == 5, 1, 0)) %>%
     select(test_flag, webflow_id, session_id = session_id_b, page_num, page_name, time_spent, completed_order_flag)
 
+# calculate conversion rate for webflow B
 conv_b <- dat_b %>% summarise(sum(completed_order_flag)/n_distinct(session_id)) %>% pull()
-conv_b
 
 dat <- bind_rows(dat_a, dat_b)
 
@@ -74,6 +74,4 @@ dat_session_grain <- dat %>%
     summarise(is_conversion = max(completed_order_flag))
 
 write_csv(dat, 'ab_data.csv')
-write_csv(dat_session_grain, 'ab_data"session_grain.csv')
-
-
+write_csv(dat_session_grain, 'ab_data_session_grain.csv')
