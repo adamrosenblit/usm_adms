@@ -108,6 +108,12 @@ htmltools::img(src = knitr::image_uri("logo4.png"),
     + So, p ~ Beta($\alpha$$_{cp}$, $\beta$$_{cp}$)
     + Set $\alpha$$_{cp}$ = _conversions_ and $\beta$$_{cp}$ = _drop-offs_
 
+***
+
+### A little intuition behind $\alpha$$_{cp}$ and $\beta$$_{cp}$ 
+* $\widehat{p}$ = conversions / (conversions + drop_offs)
+* E($\widehat{p}$) = p
+* When p ~ Beta($\alpha, \beta$), E(p) = $\alpha$ / ($\alpha$ + $\beta$)
 
 ***
 
@@ -169,6 +175,131 @@ plot_beta +
 ```
 
 ***
+## Bayes A/B Test Plots
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+library(bayesAB)
+pretest_A <- read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='pre_test' & webflow_id=='A')
+test_A <-  read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='test' & webflow_id=='A')
+test_B <-  read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='test' & webflow_id=='B')
+get_stats <- function(x) {
+    conversions <-sum(x)
+    sample_size <- length(x)
+    conversion_rate <- round(conversions/sample_size, 4)
+    variance <- conversion_rate*(1-conversion_rate)/sample_size
+    lower_95 <- round(conversion_rate - 1.96*sqrt(variance), 4)
+    upper_95 <- round(conversion_rate + 1.96*sqrt(variance), 4)
+    my_stats <- list(conversions = conversions, 
+                     sample_size = sample_size,
+                     conversion_rate = conversion_rate, 
+                     variance = variance,
+                     lower_95 = lower_95,
+                     upper_95 = upper_95)
+    return(my_stats)
+}
+pretest_A_stats <- get_stats(x=pretest_A$is_conversion)
+test_A_stats <- get_stats(x=test_A$is_conversion)
+test_B_stats <- get_stats(x=test_B$is_conversion)
+prior_alpha <- pretest_A_stats$conversions
+prior_beta <- pretest_A_stats$sample_size - pretest_A_stats$conversions
+abTest <- bayesTest(test_A$is_conversion, 
+                    test_B$is_conversion, 
+                    priors = c('alpha' = prior_alpha, 'beta' = prior_beta), 
+                    n_samples = 1e5, 
+                    distribution = 'bernoulli')
+plots <- plot(abTest)
+posteriors <- plots$posteriors$Probability
+posteriors + 
+    ggtitle('Posterior Distributions of A and B') +
+    theme(plot.title = element_text(hjust = 0.5))
+```
+
+***
+## Bayes A/B Test Plots, continued
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+library(bayesAB)
+pretest_A <- read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='pre_test' & webflow_id=='A')
+test_A <-  read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='test' & webflow_id=='A')
+test_B <-  read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='test' & webflow_id=='B')
+get_stats <- function(x) {
+    conversions <-sum(x)
+    sample_size <- length(x)
+    conversion_rate <- round(conversions/sample_size, 4)
+    variance <- conversion_rate*(1-conversion_rate)/sample_size
+    lower_95 <- round(conversion_rate - 1.96*sqrt(variance), 4)
+    upper_95 <- round(conversion_rate + 1.96*sqrt(variance), 4)
+    my_stats <- list(conversions = conversions, 
+                     sample_size = sample_size,
+                     conversion_rate = conversion_rate, 
+                     variance = variance,
+                     lower_95 = lower_95,
+                     upper_95 = upper_95)
+    return(my_stats)
+}
+pretest_A_stats <- get_stats(x=pretest_A$is_conversion)
+test_A_stats <- get_stats(x=test_A$is_conversion)
+test_B_stats <- get_stats(x=test_B$is_conversion)
+prior_alpha <- pretest_A_stats$conversions
+prior_beta <- pretest_A_stats$sample_size - pretest_A_stats$conversions
+abTest <- bayesTest(test_A$is_conversion, 
+                    test_B$is_conversion, 
+                    priors = c('alpha' = prior_alpha, 'beta' = prior_beta), 
+                    n_samples = 1e5, 
+                    distribution = 'bernoulli')
+plots <- plot(abTest)
+AliftoverB <- plots$samples$Probability
+AliftoverB + 
+    ggtitle('Histogram of (A-B)/B Sampled from Posteriors') +
+    theme(plot.title = element_text(hjust = 0.5))
+```
+
+***
+## Bayes A/B Test Summary
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+library(bayesAB)
+pretest_A <- read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='pre_test' & webflow_id=='A')
+test_A <-  read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='test' & webflow_id=='A')
+test_B <-  read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='test' & webflow_id=='B')
+get_stats <- function(x) {
+    conversions <-sum(x)
+    sample_size <- length(x)
+    conversion_rate <- round(conversions/sample_size, 4)
+    variance <- conversion_rate*(1-conversion_rate)/sample_size
+    lower_95 <- round(conversion_rate - 1.96*sqrt(variance), 4)
+    upper_95 <- round(conversion_rate + 1.96*sqrt(variance), 4)
+    my_stats <- list(conversions = conversions, 
+                     sample_size = sample_size,
+                     conversion_rate = conversion_rate, 
+                     variance = variance,
+                     lower_95 = lower_95,
+                     upper_95 = upper_95)
+    return(my_stats)
+}
+pretest_A_stats <- get_stats(x=pretest_A$is_conversion)
+test_A_stats <- get_stats(x=test_A$is_conversion)
+test_B_stats <- get_stats(x=test_B$is_conversion)
+prior_alpha <- pretest_A_stats$conversions
+prior_beta <- pretest_A_stats$sample_size - pretest_A_stats$conversions
+abTest <- bayesTest(test_A$is_conversion, 
+                    test_B$is_conversion, 
+                    priors = c('alpha' = prior_alpha, 'beta' = prior_beta), 
+                    n_samples = 1e5, 
+                    distribution = 'bernoulli')
+summary(abTest)
+```
+
+***
+###Bayes A/B Test Summary, continued
+* We are 0% certain that flow A is better than flow B, which implies B is better than A.
+* In addition, we assert that the conversion rate for A is between -16.2% and -5.61% better (bigger) than that for B, implying B is defintiely better than A.
+* The "posterior expected loss for choosing B over A" is 12.5%
+    + "Based on the current winner, what is the expected loss you would see should you choose wrongly?"
+    + Given that B is our current winner, we would expect to lose 12.5% in lift (think (B-A)/A percent life calculation)
+if we choose A (the loser) over B (the winner).
+
+***
 ```{r, echo=FALSE}
 htmltools::img(src = knitr::image_uri("logo4.png"), 
                alt = 'logo', 
@@ -210,9 +341,11 @@ gg
 ***
 ### Further Readings 
 * https://cran.r-project.org/web/packages/bayesAB/vignettes/introduction.html
-* https://www.countbayesie.com/blog/2015/4/25/bayesian-ab-testing
 * https://github.com/FrankPortman/bayesAB/
-* See bayesian_ab_test.R for many more interesting links on the subject!
+* https://www.countbayesie.com/blog/2015/2/18/hans-solo-and-bayesian-priors
+* https://www.countbayesie.com/blog/2015/4/25/bayesian-ab-testing
+* http://varianceexplained.org/r/bayesian_ab_baseball/
+
 
 
 

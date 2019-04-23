@@ -106,16 +106,16 @@ prop.test(x = c(test_A_stats$conversions, test_B_stats$conversions),
 # rate, aka the sample proportion p_hat, which estimates p, the population proportion, or true conversion probability.  
 # 
 #   p_hat = conversions / (conversions + drop_offs)
-#         = 727 / (727 + 4274)
-#         = 0.1454 
+#         = 627 / (627 + 4373)
+#         = 0.1254 
 #
-#   95% CI: (0.1356, 0.1552)
+#   95% CI: (0.1162, 0.1346)
 #
 # We also know the mean of the Beta distribution is given by,
 #
 #   E(p) = alpha / (alpha + beta)
 #
-# which looks very much like our defintion of p_hat.  So, we want p ~ Beta(alpha=727, beta=4274).
+# which looks very much like our defintion of p_hat.  So, we want p ~ Beta(alpha=627, beta=4373).
 #
 # We'll add the point estimate p_hat as well as the bounds of 95% CI for reference.
 
