@@ -32,6 +32,7 @@ library(bayesAB)
 
 # # Ideally, we would conduct a power test to determine the sample size required to detect a small differences (h=0.1)
 # # in conversion rate with 5% Type I error rate (sig.level=0.05) and 20% Type II error (power=1-TypeII=0.80).
+# library(pwr)
 # power_test <- pwr.2p.test(h=0.1, 
 #                           sig.level=0.05, 
 #                           power=0.8)
@@ -39,39 +40,17 @@ library(bayesAB)
 # n <- ceiling(power_test$n)
 # n
 
-# data <- read.csv('ab_data.csv')
-data <- read.csv('ab_data.csv')
+data <- read.csv('ab_data_session_grain.csv')
 # View(data)
 
-# pre-test flow A
-pretest_webflow_A <- data %>% filter(test_flag=='pre_test' & webflow_id=='A')
-# View(pretest_webflow_A)
+pretest_A <- data %>% filter(test_flag=='pre_test' & webflow_id=='A')
+# View(pretest_A)
 
-# test flow A
-test_webflow_A <- data %>% filter(test_flag=='test' & webflow_id=='A')
-# View(test_webflow_A)
+test_A <- data %>% filter(test_flag=='test' & webflow_id=='A')
+# View(test_A)
 
-# test flow B 
-test_webflow_B <- data %>% filter(test_flag=='test' & webflow_id=='B')
-# View(test_webflow_B)
-
-# reduce the pre-test flow A data to the session level
-session_level_pretest_webflow_A <- pretest_webflow_A %>% 
-    group_by(session_id) %>%
-    summarize(is_order = max(completed_order_flag))    
-# View(session_level_pretest_webflow_A)
-
-# reduce the test flow A data to the session level
-session_level_test_webflow_A <- test_webflow_A %>% 
-    group_by(session_id) %>%
-    summarize(is_order = max(completed_order_flag))    
-# View(session_level_test_webflow_A)
-
-# reduce the test flow B data to the session level
-session_level_test_webflow_B <- test_webflow_B %>% 
-    group_by(session_id) %>%
-    summarize(is_order = max(completed_order_flag))    
-# View(session_level_test_webflow_B)
+test_B <- data %>% filter(test_flag=='test' & webflow_id=='B')
+# View(test_B)
 
 # function to obtain some stats to be used in the hypothesis test
 get_stats <- function(x) {
@@ -90,11 +69,13 @@ get_stats <- function(x) {
     return(my_stats)
 }
 
-pretest_A_stats <- get_stats(x=session_level_pretest_webflow_A$is_order)
+pretest_A_stats <- get_stats(x=pretest_A$is_conversion)
 pretest_A_stats
-test_A_stats <- get_stats(x=session_level_test_webflow_A$is_order)
+
+test_A_stats <- get_stats(x=test_A$is_conversion)
 test_A_stats
-test_B_stats <- get_stats(x=session_level_test_webflow_B$is_order)
+
+test_B_stats <- get_stats(x=test_B$is_conversion)
 test_B_stats
 
 # hypothesis test 1... H0: pretest A conversion rate = test A conversion rate 
@@ -105,25 +86,21 @@ prop.test(x = c(pretest_A_stats$conversions, test_A_stats$conversions),
           alternative = 'two.sided')
 
 # hypothesis test 2... H0: test A conversion rate = test B conversion rate 
-# p > 0.05, so we fail to reject the null hypothesis 
+# p < 0.05, so we reject the null hypothesis 
 prop.test(x = c(test_A_stats$conversions, test_B_stats$conversions), 
           n = c(test_A_stats$sample_size, test_B_stats$sample_size),
           conf.level = 0.95,
           alternative = 'two.sided')
 
-
 # Instead of relying on a traditional hypothesis test...
 #
-# If we think about is_order as a vector of Bernoulli RV's, then we can use the beta distribution as the conjugate prior of p.  
+# If we think about is_conversion as a vector of Bernoulli RV's, then we can use the beta distribution as the conjugate prior of p.  
 #
 # For clarity, we can imagine is_order as having been generated as follows,
-#   is_order <- rbinom(n,1,p) 
+#   is_conversion <- rbinom(n,1,p) 
 # which implies that each,
-#   is_order[i] ~ Bernoulli(p), 0 <= i <= n
+#   is_conversion[i] ~ Bernoulli(p), 0 <= i <= n
 #
-# Scroll down to Details > Bernoulli
-?bayesTest
-
 # So, we need to find the (hyper)params that appropriately model p ~ Beta(alpha, beta).  To do so, we will 
 # use our historical knowledge about p from the pretest A data. Specifically, we calculated the sample conversion 
 # rate, aka the sample proportion p_hat, which estimates p, the population proportion, or true conversion probability.  
@@ -142,42 +119,81 @@ prop.test(x = c(test_A_stats$conversions, test_B_stats$conversions),
 #
 # We'll add the point estimate p_hat as well as the bounds of 95% CI for reference.
 
-alpha <- pretest_A_stats$conversions
-beta <- pretest_A_stats$sample_size - pretest_A_stats$conversions
+# Scroll down to Details > Bernoulli
+?bayesTest
 
-plot_beta <- plotBeta(alpha=alpha, beta=beta)
+prior_alpha <- pretest_A_stats$conversions
+prior_beta <- pretest_A_stats$sample_size - pretest_A_stats$conversions
+
+plot_beta <- plotBeta(alpha=prior_alpha, beta=prior_beta)
 plot_beta + 
     geom_vline(xintercept=pretest_A_stats$lower_95, linetype='dashed', color = 'darkblue') +
     geom_vline(xintercept=pretest_A_stats$upper_95, linetype='dashed', color = 'darkblue') +
     geom_vline(xintercept=pretest_A_stats$conversion_rate, linetype='solid', color = 'darkred') +
-    xlim(0.1, 0.2) 
+    xlim(0.10, 0.15) +
+    ggtitle(substitute(paste('Conjugate Prior:  p ~ Beta(', alpha, '=', prior_alpha, ', ', beta, '=', prior_beta, ')'), list(prior_alpha=prior_alpha, prior_beta=prior_beta))) +
+    theme(plot.title = element_text(hjust = 0.5))
 
 # This is our AB Test object    
-abTest_1 <- bayesTest(session_level_test_webflow_A$is_order, 
-                      session_level_test_webflow_B$is_order, 
-                      priors = c('alpha' = alpha, 'beta' = beta), 
-                      n_samples = 1e5, 
-                      distribution = 'bernoulli')
+abTest <- bayesTest(test_A$is_conversion, 
+                    test_B$is_conversion, 
+                    priors = c('alpha' = prior_alpha, 'beta' = prior_beta), 
+                    n_samples = 1e5, 
+                    distribution = 'bernoulli')
 
-# print yields summary statistics of the input data for conversion rates of pages A and B, 
-# the parameters of chosen prior (our belief), and the number of posterior samples to draw 
-# (1e5 is a good rule of thumb and should be large enough for the distribution to converge).
-print(abTest_1)
-# useful test results .. 
-# we are 27.13% certain that flow A is better than flow B, which implies B is better than A
-# in addition, we assert that flow A is between -7.65% and 3.71% better than flow B ... hmmmm, a negative lower bound
-# we expect a loss of 2.81% if choose B over A
-summary(abTest_1)
-        # percentLift=rep(0, length(abTest_1$posteriors)),
-        # credInt=rep(.9, length(abTest_1$posteriors)))
-# and vizualizations
-plot(abTest_1)
+# Print yields summary statistics of the input data for conversion rates of pages A and B,
+# the parameters of the prior, and the number of posterior samples to draw (1e5 is a good rule 
+# of thumb and should be large enough for the distribution to converge)
+print(abTest)
+
+# Useful test results ...
+#
+# We are 0% certain that flow A is better than flow B, which implies B is better than A.
+#
+# In addition, we assert that the conversion rate for A is between -16.2% and -5.61% better (bigger) than that for B, 
+# again, implying B is defintiely better than A.
+#
+# The "posterior expected loss for choosing B over A" is 12.5%, which can be interpretted as follows...
+# "Based on the current winner, what is the expected loss you would see should you choose wrongly?"
+# So, given that B is our current winner, we would expect to lose 12.5% in lift (think (B-A)/A percent life calculation)
+# if we choose A (the loser) over B (the winner).
+summary(abTest)
+        # percentLift=rep(0, length(abTest$posteriors)),
+        # credInt=rep(.9, length(abTest$posteriors)))
+
+# Some vizualizations
+plot(abTest)
 
 
-#  point estimate related to credible interval of A's lift over B 
-A = session_level_test_webflow_A$is_order
-B = session_level_test_webflow_B$is_order
-A_minus_B_over_B = ((sum(A)/length(A))-(sum(B)/length(B)))/(sum(B)/length(B))
-A_minus_B_over_B
+# MonteCarlo simulation to replicate the results of our bayesTest() ... not exact, but very very close
+# This should give you an idea as to what is happening behind the scenes
+n_trials <- 1e5
+a_samples <- rbeta(n_trials,
+                   test_A_stats$conversions+prior_alpha,
+                   (test_A_stats$sample_size-test_A_stats$conversions)+prior_beta)
+b_samples <- rbeta(n_trials,
+                   test_B_stats$conversions+prior_alpha,
+                   (test_B_stats$sample_size-test_B_stats$conversions)+prior_beta)
+
+# P(A > B)
+prob_a_superior <- sum(a_samples > b_samples)/n_trials
+prob_a_superior
+
+# Credible Interval on (A - B) / B 
+credible_interval <- quantile((a_samples-b_samples)/b_samples, c(.05,.95))
+credible_interval
+
+#  Point estimate related to credible interval of A's lift over B ... not included in summary of bayesTest()
+a_minus_b_over_b = (mean(a_samples)-mean(b_samples))/mean(b_samples)
+a_minus_b_over_b
+
+# Posterior Expected Loss for choosing B over A
+BoverA <- b_samples > a_samples
+loss <- (b_samples-a_samples)/a_samples
+PEL <- mean(BoverA) * mean(loss[BoverA])
+PEL
+
+
+
 
 

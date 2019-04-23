@@ -83,7 +83,7 @@ htmltools::img(src = knitr::image_uri("logo4.png"),
 ### Bayesian Approach
 * Encapsulate prior knowledge of conversion rate (ie, Find the conjugate prior distribution of the true parameter)
 * Combine test data with prior knowledge to get the posterior distribution over the parameter
-* Obtain direct probabilities of whether B is better than A (and by how much), and of the expected loss of choosing B over A
+* Obtain direct probabilities of whether B is better than A (and by how much), and of the expected loss associated with choosing B over A
 
 ***
 ```{r, echo=FALSE}
@@ -99,25 +99,17 @@ htmltools::img(src = knitr::image_uri("logo4.png"),
 
     
 ***
-```{r, echo=FALSE}
-htmltools::img(src = knitr::image_uri("logo4.png"), 
-               alt = 'logo', 
-               style = 'background:none; border:none; box-shadow:none; position:relative;')
-```  
 
 ### So, how does the Bayes A/B test work?
 * Find a conjugate prior for the parameter in question
-    + The set of visit's are Binomial(n,p), since each visit's probability of conversion is an _iid_ Bernoulli(p) trial
-    + Then, $p_c$$_p$ ~ Beta($\alpha$$_{cp}$, $\beta$$_{cp}$) as its conjugate prior
-    + Set $\alpha$$_{cp}$ equal to the conversions and $\beta$$_{cp}$ as the drop-offs using prior knowldge of conversion odds
+    + Each visit is an _iid_ Bernoulli(p) trial
+    + Therefore, the set of visits are Binomial(n,p),
+    + The conjugate prior of the parameter of a Binomial _RV_ is the Beta Distribution
+    + So, p ~ Beta($\alpha$$_{cp}$, $\beta$$_{cp}$)
+    + Set $\alpha$$_{cp}$ = _conversions_ and $\beta$$_{cp}$ = _drop-offs_
 
 
 ***
-```{r, echo=FALSE}
-htmltools::img(src = knitr::image_uri("logo4.png"), 
-               alt = 'logo', 
-               style = 'background:none; border:none; box-shadow:none; position:relative;')
-```  
 
 ### So, how does the Bayes A/B test work? (continued)   
 * Use data collected for A and B to define the posterior distributions over their parameters 
@@ -125,18 +117,13 @@ htmltools::img(src = knitr::image_uri("logo4.png"),
     + $p_B$ ~ Beta($\alpha$$_B$ + $\alpha$$_{cp}$, $\beta$$_B$ + $\beta$$_{cp}$)
 
 ***
-```{r, echo=FALSE}
-htmltools::img(src = knitr::image_uri("logo4.png"), 
-               alt = 'logo', 
-               style = 'background:none; border:none; box-shadow:none; position:relative;')
-```  
 
 ### So, how does the Bayes A/B test work? (continued)   
 * Conduct a MonteCarlo simulation using those posterior distributions
     + Draw n samples from $p_A$ and from $p_B$
     + Calculate P(B>A)
     + Calculate credible interval on (B-A)/A
-    + Calculate posterior expected loss of choosing B over A
+    + Calculate posterior expected loss associated with choosing B over A
 
 ***
 ```{r, echo=FALSE}
@@ -146,6 +133,40 @@ htmltools::img(src = knitr::image_uri("logo4.png"),
 ```  
 
 ###Let's run some code!
+
+***
+## Our Conjugate Prior
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+library(bayesAB)
+pretest_A <- read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='pre_test' & webflow_id=='A')
+get_stats <- function(x) {
+    conversions <-sum(x)
+    sample_size <- length(x)
+    conversion_rate <- round(conversions/sample_size, 4)
+    variance <- conversion_rate*(1-conversion_rate)/sample_size
+    lower_95 <- round(conversion_rate - 1.96*sqrt(variance), 4)
+    upper_95 <- round(conversion_rate + 1.96*sqrt(variance), 4)
+    my_stats <- list(conversions = conversions, 
+                     sample_size = sample_size,
+                     conversion_rate = conversion_rate, 
+                     variance = variance,
+                     lower_95 = lower_95,
+                     upper_95 = upper_95)
+    return(my_stats)
+}
+pretest_A_stats <- get_stats(x=pretest_A$is_conversion)
+prior_alpha <- pretest_A_stats$conversions
+prior_beta <- pretest_A_stats$sample_size - pretest_A_stats$conversions
+plot_beta <- plotBeta(alpha=prior_alpha, beta=prior_beta)
+plot_beta + 
+    geom_vline(xintercept=pretest_A_stats$lower_95, linetype='dashed', color = 'darkblue') +
+    geom_vline(xintercept=pretest_A_stats$upper_95, linetype='dashed', color = 'darkblue') +
+    geom_vline(xintercept=pretest_A_stats$conversion_rate, linetype='solid', color = 'darkred') +
+    xlim(0.10, 0.15) +
+    ggtitle(substitute(paste('Conjugate Prior: p ~ Beta(', alpha, '=', prior_alpha, ', ', beta, '=', prior_beta, ')'), list(prior_alpha=prior_alpha, prior_beta=prior_beta))) +
+    theme(plot.title = element_text(hjust = 0.5))
+```
 
 ***
 ```{r, echo=FALSE}
@@ -158,7 +179,7 @@ htmltools::img(src = knitr::image_uri("logo4.png"),
 * We could also compare user interactions on two versions of a page 
     + interactions ~ Poisson($\lambda$)
     + then, $\lambda$ ~ Gamma($\alpha, \beta$)
-* Then we could test the effect of increased/decreased interactions on conversion using the ``combine``` function
+* Then we could test the effect of increased/decreased interactions on conversion using the ```combine``` function
 
 
 ***
@@ -191,6 +212,7 @@ gg
 * https://cran.r-project.org/web/packages/bayesAB/vignettes/introduction.html
 * https://www.countbayesie.com/blog/2015/4/25/bayesian-ab-testing
 * https://github.com/FrankPortman/bayesAB/
+* See bayesian_ab_test.R for many more interesting links on the subject!
 
 
 
