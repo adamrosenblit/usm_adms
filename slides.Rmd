@@ -293,7 +293,7 @@ summary(abTest)
 ***
 ###Bayes A/B Test Summary, continued
 * We are 4.53% certain that flow A is better than flow B, which implies B is better than A.
-* In addition, we assert that the conversion rate for A is between -11.5% and -0.18% better than that for B, implying B is defintiely better than A.
+* In addition, we assert that the conversion rate for A is between -11.5% and -0.18% better relative to B, implying B is better than A.
 * The "posterior expected loss for choosing B over A" is 6.52%
     + "Based on the current winner, what is the expected loss you would see should you choose wrongly?"
     + Given that B is our current winner, we would expect to lose 6.52% in lift (think (B-A)/A percent lift calculation)
