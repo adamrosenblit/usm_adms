@@ -38,7 +38,7 @@ conv_a <- dat_a %>% summarise(sum(completed_order_flag)/n_distinct(session_id)) 
 
 # create data for webflow B
 session_id_b <- 200001:(200000 + b)
-last_step_b <- ceiling(rtruncnorm(b, a = 0, b = 5, mean = .5, sd = 5))
+last_step_b <- ceiling(rtruncnorm(b, a = 0, b = 5, mean = 2, sd = 2.6))
 
 dat_b <- as_tibble(cbind(session_id_b, last_step_b))
 
