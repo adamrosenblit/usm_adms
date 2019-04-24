@@ -138,7 +138,43 @@ htmltools::img(src = knitr::image_uri("logo4.png"),
                style = 'background:none; border:none; box-shadow:none; position:relative;')
 ```  
 
-###Let's run some code!
+###Before we jump into our Bayes Test, let's run some hypothesis tests
+
+***
+## Frequentist A/B Test Results
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+library(bayesAB)
+pretest_A <- read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='pre_test' & webflow_id=='A')
+test_A <-  read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='test' & webflow_id=='A')
+test_B <-  read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='test' & webflow_id=='B')
+get_stats <- function(x) {
+    conversions <-sum(x)
+    sample_size <- length(x)
+    conversion_rate <- round(conversions/sample_size, 4)
+    variance <- conversion_rate*(1-conversion_rate)/sample_size
+    lower_95 <- round(conversion_rate - 1.96*sqrt(variance), 4)
+    upper_95 <- round(conversion_rate + 1.96*sqrt(variance), 4)
+    my_stats <- list(conversions = conversions, 
+                     sample_size = sample_size,
+                     conversion_rate = conversion_rate, 
+                     variance = variance,
+                     lower_95 = lower_95,
+                     upper_95 = upper_95)
+    return(my_stats)
+}
+pretest_A_stats <- get_stats(x=pretest_A$is_conversion)
+test_A_stats <- get_stats(x=test_A$is_conversion)
+test_B_stats <- get_stats(x=test_B$is_conversion)
+prop.test(x = c(pretest_A_stats$conversions, test_A_stats$conversions), 
+          n = c(pretest_A_stats$sample_size, test_A_stats$sample_size),
+          conf.level = 0.95,
+          alternative = 'two.sided')
+prop.test(x = c(test_A_stats$conversions, test_B_stats$conversions), 
+          n = c(test_A_stats$sample_size, test_B_stats$sample_size),
+          conf.level = 0.95,
+          alternative = 'two.sided')
+```
 
 ***
 ## Our Conjugate Prior
@@ -179,6 +215,7 @@ plot_beta +
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
 library(tidyverse)
 library(bayesAB)
+set.seed(444)
 pretest_A <- read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='pre_test' & webflow_id=='A')
 test_A <-  read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='test' & webflow_id=='A')
 test_B <-  read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='test' & webflow_id=='B')
@@ -219,6 +256,7 @@ posteriors +
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
 library(tidyverse)
 library(bayesAB)
+set.seed(444)
 pretest_A <- read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='pre_test' & webflow_id=='A')
 test_A <-  read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='test' & webflow_id=='A')
 test_B <-  read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='test' & webflow_id=='B')
@@ -259,6 +297,7 @@ AliftoverB +
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
 library(tidyverse)
 library(bayesAB)
+set.seed(444)
 pretest_A <- read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='pre_test' & webflow_id=='A')
 test_A <-  read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='test' & webflow_id=='A')
 test_B <-  read.csv('ab_data_session_grain.csv') %>% filter(test_flag=='test' & webflow_id=='B')
@@ -292,12 +331,11 @@ summary(abTest)
 
 ***
 ###Bayes A/B Test Summary, continued
-* We are 4.53% certain that flow A is better than flow B, which implies B is better than A.
-* In addition, we assert that the conversion rate for A is between -11.5% and -0.18% better relative to B, implying B is better than A.
-* The "posterior expected loss for choosing B over A" is 6.52%
-    + "Based on the current winner, what is the expected loss you would see should you choose wrongly?"
-    + Given that B is our current winner, we would expect to lose 6.52% in lift (think (B-A)/A percent lift calculation)
-if we choose A (the loser) over B (the winner).
+* Probability of A>B is 4.69%, which implies probability of B>A is 95.31%.
+* The percent difference of A relative to B is between -11.5% and -0.18%, again implying B is bigger/better than A.
+* The "posterior expected loss for choosing B over A" is 6.50%
+    + Based on the current winner, what is the expected loss you would see should you choose wrongly?
+    + Given that B is our current winner, we would expect to lose 6.50% in lift (think (A-B)/B) if we choose A (the loser) over B (the winner).
 
 ***
 ```{r, echo=FALSE}
@@ -349,8 +387,6 @@ gg
 ***
 ### Github repo
 https://github.com/adamrosenblit/usm_adms
-
-
 
 
 
