@@ -16,3 +16,5 @@ Contents:
 	* Slides for presentation
 * `usm_adms.Rproj`
 	* R project file
+
+[Link to presentation slides](http://www.fishingwithdave.net/usm/slides.html)
