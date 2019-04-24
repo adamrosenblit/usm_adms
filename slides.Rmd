@@ -61,6 +61,31 @@ htmltools::img(src = knitr::image_uri("logo4.png"),
     + Perform A/B test
 
 ***
+## Sales Funnels During A/B Test
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+library(ggthemes)
+gg <- read_csv('ab_data.csv') %>%
+    filter(test_flag == 'test') %>%
+    group_by(page_num, webflow_id) %>%
+    summarise(total_sessions = n_distinct(session_id)) %>%
+    ungroup() %>%
+    group_by(webflow_id) %>%
+    mutate(pct_total_sessions = total_sessions/max(total_sessions)) %>%
+    ggplot(aes(x = page_num, y = pct_total_sessions, fill = as.factor(pct_total_sessions))) +
+    geom_bar(stat = 'identity') +
+    facet_wrap(vars(webflow_id)) +
+    geom_text(nudge_y = .05, aes(label = paste0(round(pct_total_sessions*100, 2), '%')), size = 4) +
+    theme_economist() + scale_fill_economist() +
+    theme(legend.position = 'none') + theme(text= element_text(size = 14)) + 
+    theme(axis.title = element_text(face = 'bold')) +
+    xlab('Page Number') + ylab('Percent of Sessions')
+    
+    
+gg
+```
+
+***
 ```{r, echo=FALSE}
 htmltools::img(src = knitr::image_uri("logo4.png"), 
                alt = 'logo', 
@@ -350,31 +375,6 @@ htmltools::img(src = knitr::image_uri("logo4.png"),
     + then, $\lambda$ ~ Gamma($\alpha, \beta$)
 * Then we could test the effect of increased/decreased interactions on conversion using the ```combine``` function
 
-
-***
-## Sales Funnels During Test
-```{r message=FALSE, warning=FALSE, echo=FALSE}
-library(tidyverse)
-library(ggthemes)
-gg <- read_csv('ab_data.csv') %>%
-    filter(test_flag == 'test') %>%
-    group_by(page_num, webflow_id) %>%
-    summarise(total_sessions = n_distinct(session_id)) %>%
-    ungroup() %>%
-    group_by(webflow_id) %>%
-    mutate(pct_total_sessions = total_sessions/max(total_sessions)) %>%
-    ggplot(aes(x = page_num, y = pct_total_sessions, fill = as.factor(pct_total_sessions))) +
-    geom_bar(stat = 'identity') +
-    facet_wrap(vars(webflow_id)) +
-    geom_text(nudge_y = .05, aes(label = paste0(round(pct_total_sessions*100, 2), '%')), size = 4) +
-    theme_economist() + scale_fill_economist() +
-    theme(legend.position = 'none') + theme(text= element_text(size = 14)) + 
-    theme(axis.title = element_text(face = 'bold')) +
-    xlab('Page Number') + ylab('Percent of Sessions')
-    
-    
-gg
-```
 
 ***
 ### Further Readings 
