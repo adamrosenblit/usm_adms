@@ -134,6 +134,7 @@ plot_beta +
     ggtitle(substitute(paste('Conjugate Prior:  p ~ Beta(', alpha, '=', prior_alpha, ', ', beta, '=', prior_beta, ')'), list(prior_alpha=prior_alpha, prior_beta=prior_beta))) +
     theme(plot.title = element_text(hjust = 0.5))
 
+set.seed(444)
 # This is our AB Test object    
 abTest <- bayesTest(test_A$is_conversion, 
                     test_B$is_conversion, 
@@ -146,17 +147,17 @@ abTest <- bayesTest(test_A$is_conversion,
 # of thumb and should be large enough for the distribution to converge)
 print(abTest)
 
-# Useful test results ...
+# Useful test results ... note, these numbers may change slightly each time run bayesTest() object unless you use the set.seed() at line 137.
 #
-# We are 4.5% certain that flow A is better than flow B, which implies B is better than A.
+# We are 4.69% certain that flow A is better than flow B, which implies B is better than A.
 #
 # In addition, we assert that the conversion rate for A is between -11.5% and -0.18% better (bigger) relative to B, 
 # again, implying B is defintiely better than A.
 #
-# The "posterior expected loss for choosing B over A" is 12.5%, which can be interpretted as follows...
+# The "posterior expected loss for choosing B over A" is 6.5%, which can be interpretted as follows...
 # "Based on the current winner, what is the expected loss you would see should you choose wrongly?"
 # Or, the P{B>A} * E{(B-A)/A | B>A} ... the mean percentLift of B over A when B>A times the likelihood B>A
-# So, given that B is our current winner, we would expect to lose 6.52% in lift (think (B-A)/A percent life calculation)
+# So, given that B is our current winner, we would expect to lose 6.5% in lift (think (B-A)/A percent life calculation)
 # if we choose A (the loser) over B (the winner).
 summary(abTest)
         # percentLift=rep(0, length(abTest$posteriors)),
