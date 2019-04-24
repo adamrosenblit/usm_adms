@@ -148,14 +148,15 @@ print(abTest)
 
 # Useful test results ...
 #
-# We are 0% certain that flow A is better than flow B, which implies B is better than A.
+# We are 4.5% certain that flow A is better than flow B, which implies B is better than A.
 #
-# In addition, we assert that the conversion rate for A is between -16.2% and -5.61% better (bigger) than that for B, 
+# In addition, we assert that the conversion rate for A is between -11.5% and -0.18% better (bigger) relative to B, 
 # again, implying B is defintiely better than A.
 #
 # The "posterior expected loss for choosing B over A" is 12.5%, which can be interpretted as follows...
 # "Based on the current winner, what is the expected loss you would see should you choose wrongly?"
-# So, given that B is our current winner, we would expect to lose 12.5% in lift (think (B-A)/A percent life calculation)
+# Or, the P{B>A} * E{(B-A)/A | B>A} ... the mean percentLift of B over A when B>A times the likelihood B>A
+# So, given that B is our current winner, we would expect to lose 6.52% in lift (think (B-A)/A percent life calculation)
 # if we choose A (the loser) over B (the winner).
 summary(abTest)
         # percentLift=rep(0, length(abTest$posteriors)),

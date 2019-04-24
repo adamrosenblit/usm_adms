@@ -113,7 +113,7 @@ htmltools::img(src = knitr::image_uri("logo4.png"),
 ### A little intuition behind $\alpha$$_{cp}$ and $\beta$$_{cp}$ 
 * $\widehat{p}$ = conversions / (conversions + drop_offs)
 * E($\widehat{p}$) = p
-* When p ~ Beta($\alpha, \beta$), E(p) = $\alpha$ / ($\alpha$ + $\beta$)
+* If p ~ Beta($\alpha, \beta$), then E(p) = $\alpha$ / ($\alpha$ + $\beta$)
 
 ***
 
@@ -292,11 +292,11 @@ summary(abTest)
 
 ***
 ###Bayes A/B Test Summary, continued
-* We are 0% certain that flow A is better than flow B, which implies B is better than A.
-* In addition, we assert that the conversion rate for A is between -16.2% and -5.61% better (bigger) than that for B, implying B is defintiely better than A.
-* The "posterior expected loss for choosing B over A" is 12.5%
+* We are 4.53% certain that flow A is better than flow B, which implies B is better than A.
+* In addition, we assert that the conversion rate for A is between -11.5% and -0.18% better relative to B, implying B is better than A.
+* The "posterior expected loss for choosing B over A" is 6.52%
     + "Based on the current winner, what is the expected loss you would see should you choose wrongly?"
-    + Given that B is our current winner, we would expect to lose 12.5% in lift (think (B-A)/A percent life calculation)
+    + Given that B is our current winner, we would expect to lose 6.52% in lift (think (B-A)/A percent lift calculation)
 if we choose A (the loser) over B (the winner).
 
 ***
