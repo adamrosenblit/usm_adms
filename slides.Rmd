@@ -346,6 +346,10 @@ gg
 * https://www.countbayesie.com/blog/2015/4/25/bayesian-ab-testing
 * http://varianceexplained.org/r/bayesian_ab_baseball/
 
+***
+### Github repo
+https://github.com/adamrosenblit/usm_adms
+
 
 
 
