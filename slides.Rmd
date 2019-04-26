@@ -9,6 +9,9 @@ output:
     highlight: zenburn
     center: true
 ---
+### This story is based on actual events. In certain cases, details, timelines, or characters may have been altered for statistical purposes.
+***
+
 ```{r, echo=FALSE}
 htmltools::img(src = knitr::image_uri("logo4.png"), 
                alt = 'logo', 
@@ -387,6 +390,9 @@ htmltools::img(src = knitr::image_uri("logo4.png"),
 ***
 ### Github repo
 https://github.com/adamrosenblit/usm_adms
+
+### Slide presentation
+https://fishingwithdave.net/usm/
 
 
 
